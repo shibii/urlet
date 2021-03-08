@@ -24,6 +24,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .data(pool.clone())
             .service(routes::generate_urlet)
+            .service(routes::redirect)
     });
 
     let bind_addr = std::env::var("SERVER_BIND_ADDRESS")

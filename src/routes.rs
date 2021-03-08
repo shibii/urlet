@@ -1,4 +1,4 @@
-use actix_web::{post, web, HttpResponse, Responder};
+use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
 use serde::Serialize;
 use sqlx::postgres::PgPool;
 use tracing::{event, instrument, Level};
@@ -8,6 +8,27 @@ use uuid::Uuid;
 struct Urlet {
     id: Uuid,
     url: String,
+}
+
+#[instrument(skip(req, pool))]
+#[get("/{id}")]
+pub async fn redirect(req: HttpRequest, pool: web::Data<PgPool>) -> impl Responder {
+    let id: &str = req.match_info().get("id").unwrap();
+    let id: Uuid = Uuid::parse_str(id).unwrap();
+    event!(Level::INFO, %id, "querying urlet from the database");
+    let res = sqlx::query_as!(Urlet, r#"SELECT * FROM urlet WHERE id = $1"#, id)
+        .fetch_one(pool.get_ref())
+        .await;
+
+    match res {
+        Ok(urlet) => {
+            HttpResponse::PermanentRedirect()
+                .header("Location", urlet.url)
+                .finish()
+                .await
+        }
+        _ => HttpResponse::NotFound().finish().await,
+    }
 }
 
 #[instrument(skip(pool))]
