@@ -18,7 +18,10 @@ async fn redirect(id: web::Path<String>, pool: web::Data<PgPool>) -> impl Respon
     event!(Level::INFO, %id, "decoding id shorthand into uuid");
     let uuid = match super::urlet::decode(&id) {
         Ok(uuid) => uuid,
-        _ => return HttpResponse::BadRequest().finish(),
+        _ => {
+            event!(Level::INFO, %id, "failed to decode id shorthand into uuid");
+            return HttpResponse::BadRequest().finish();
+        }
     };
 
     event!(Level::INFO, %id, %uuid, "querying database for id param matching urlet");
@@ -31,7 +34,10 @@ async fn redirect(id: web::Path<String>, pool: web::Data<PgPool>) -> impl Respon
         Ok(urlet) => HttpResponse::PermanentRedirect()
             .header("Location", urlet.url)
             .finish(),
-        _ => HttpResponse::BadRequest().finish(),
+        Err(err) => {
+            event!(Level::INFO, "failed to query for urlet: {:?}", err);
+            HttpResponse::BadRequest().finish()
+        }
     }
 }
 
