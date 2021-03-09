@@ -10,17 +10,18 @@ struct Urlet {
     url: String,
 }
 
+#[allow(clippy::async_yields_async)]
 #[instrument(skip(req, pool))]
 #[get("/{id}")]
 pub async fn redirect(req: HttpRequest, pool: web::Data<PgPool>) -> impl Responder {
     let id = match req.match_info().get("id") {
         Some(id) => id,
-        _ => return HttpResponse::BadRequest().finish().await,
+        _ => return HttpResponse::BadRequest().finish(),
     };
 
     let uuid = match super::urlet::decode(id) {
         Ok(uuid) => uuid,
-        _ => return HttpResponse::BadRequest().finish().await,
+        _ => return HttpResponse::BadRequest().finish(),
     };
 
     let res = sqlx::query_as!(Urlet, r#"SELECT * FROM urlet WHERE id = $1"#, uuid)
@@ -28,20 +29,19 @@ pub async fn redirect(req: HttpRequest, pool: web::Data<PgPool>) -> impl Respond
         .await;
 
     match res {
-        Ok(urlet) => {
-            HttpResponse::PermanentRedirect()
-                .header("Location", urlet.url)
-                .finish()
-                .await
-        }
-        _ => HttpResponse::BadRequest().finish().await,
+        Ok(urlet) => HttpResponse::PermanentRedirect()
+            .header("Location", urlet.url)
+            .finish(),
+        _ => HttpResponse::BadRequest().finish(),
     }
 }
 
+#[allow(clippy::async_yields_async)]
 #[instrument(skip(pool))]
 #[post("/")]
 pub async fn generate_urlet(url: String, pool: web::Data<PgPool>) -> impl Responder {
     let uuid = Uuid::new_v4();
+
     event!(Level::INFO, %uuid, %url, "inserting a new urlet into the database");
     let res = sqlx::query_as!(
         Urlet,
@@ -55,8 +55,8 @@ pub async fn generate_urlet(url: String, pool: web::Data<PgPool>) -> impl Respon
     let urlet = super::urlet::encode(uuid);
 
     match res {
-        Ok(_) => HttpResponse::Ok().json(urlet).await,
-        _ => HttpResponse::InternalServerError().finish().await,
+        Ok(_) => HttpResponse::Ok().json(urlet),
+        _ => HttpResponse::InternalServerError().finish(),
     }
 }
 
