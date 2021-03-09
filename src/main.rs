@@ -21,12 +21,8 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("failed to connect to the database");
 
-    let mut server = HttpServer::new(move || {
-        App::new()
-            .data(pool.clone())
-            .service(routes::generate_urlet)
-            .service(routes::redirect)
-    });
+    let mut server =
+        HttpServer::new(move || App::new().data(pool.clone()).configure(routes::routes));
 
     let bind_addr = std::env::var("SERVER_BIND_ADDRESS")
         .expect("missing environment variable: SERVER_BIND_ADDRESS");

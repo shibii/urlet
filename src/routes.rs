@@ -52,3 +52,8 @@ pub async fn generate_urlet(url: String, pool: web::Data<PgPool>) -> impl Respon
         _ => HttpResponse::InternalServerError().finish().await,
     }
 }
+
+pub fn routes(cfg: &mut web::ServiceConfig) {
+    cfg.service(redirect);
+    cfg.service(generate_urlet);
+}
