@@ -1,4 +1,4 @@
-use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
+use actix_web::{get, post, web, HttpResponse, Responder};
 use serde::Serialize;
 use sqlx::postgres::PgPool;
 use tracing::{event, instrument, Level};
@@ -18,8 +18,8 @@ async fn redirect(id: web::Path<String>, pool: web::Data<PgPool>) -> impl Respon
     event!(Level::INFO, %id, "decoding id shorthand into uuid");
     let uuid = match super::urlet::decode(&id) {
         Ok(uuid) => uuid,
-        _ => {
-            event!(Level::INFO, %id, "failed to decode id shorthand into uuid");
+        Err(err) => {
+            event!(Level::INFO, %id, "failed to decode id shorthand into uuid: {:?}", err);
             return HttpResponse::BadRequest().finish();
         }
     };
@@ -48,7 +48,10 @@ async fn generate_urlet(url: String, pool: web::Data<PgPool>) -> impl Responder 
     event!(Level::INFO, %url, "checking validity of url formatting");
     let url = match Url::parse(&url) {
         Ok(url) => url.to_string(),
-        _ => return HttpResponse::BadRequest().finish(),
+        Err(err) => {
+            event!(Level::INFO, %url, "failed to parse url: {:?}", err);
+            return HttpResponse::BadRequest().finish();
+        }
     };
 
     let uuid = Uuid::new_v4();
@@ -68,7 +71,10 @@ async fn generate_urlet(url: String, pool: web::Data<PgPool>) -> impl Responder 
     event!(Level::TRACE, "responding to request");
     match res {
         Ok(_) => HttpResponse::Ok().json(urlet),
-        _ => HttpResponse::InternalServerError().finish(),
+        Err(err) => {
+            event!(Level::INFO, "failed to insert new urlet into db: {:?}", err);
+            HttpResponse::InternalServerError().finish()
+        }
     }
 }
 
