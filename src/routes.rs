@@ -14,9 +14,9 @@ struct Urlet {
 #[get("/{id}")]
 pub async fn redirect(req: HttpRequest, pool: web::Data<PgPool>) -> impl Responder {
     let id: &str = req.match_info().get("id").unwrap();
-    let id: Uuid = Uuid::parse_str(id).unwrap();
+    let uuid = super::urlet::decode(id).unwrap();
     event!(Level::INFO, %id, "querying urlet from the database");
-    let res = sqlx::query_as!(Urlet, r#"SELECT * FROM urlet WHERE id = $1"#, id)
+    let res = sqlx::query_as!(Urlet, r#"SELECT * FROM urlet WHERE id = $1"#, uuid)
         .fetch_one(pool.get_ref())
         .await;
 
@@ -34,19 +34,21 @@ pub async fn redirect(req: HttpRequest, pool: web::Data<PgPool>) -> impl Respond
 #[instrument(skip(pool))]
 #[post("/")]
 pub async fn generate_urlet(url: String, pool: web::Data<PgPool>) -> impl Responder {
-    let id = Uuid::new_v4();
-    event!(Level::INFO, %id, %url, "inserting a new urlet into the database");
+    let uuid = Uuid::new_v4();
+    event!(Level::INFO, %uuid, %url, "inserting a new urlet into the database");
     let res = sqlx::query_as!(
         Urlet,
         r#"INSERT INTO urlet(id, url) VALUES ( $1, $2 ) RETURNING *"#,
-        id,
+        uuid,
         url
     )
     .fetch_one(pool.get_ref())
     .await;
 
+    let urlet = super::urlet::encode(uuid);
+
     match res {
-        Ok(urlet) => HttpResponse::Ok().json(urlet).await,
+        Ok(_) => HttpResponse::Ok().json(urlet).await,
         _ => HttpResponse::InternalServerError().finish().await,
     }
 }

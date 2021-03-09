@@ -5,6 +5,7 @@ use tracing::{event, Level};
 mod db;
 mod dotenv;
 mod routes;
+mod urlet;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
