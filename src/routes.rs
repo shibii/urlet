@@ -2,6 +2,7 @@ use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
 use serde::Serialize;
 use sqlx::postgres::PgPool;
 use tracing::{event, instrument, Level};
+use url::Url;
 use uuid::Uuid;
 
 #[derive(Serialize)]
@@ -44,6 +45,12 @@ async fn redirect(req: HttpRequest, pool: web::Data<PgPool>) -> impl Responder {
 #[instrument(skip(pool))]
 #[post("/")]
 async fn generate_urlet(url: String, pool: web::Data<PgPool>) -> impl Responder {
+    event!(Level::INFO, %url, "checking validity of url formatting");
+    let url = match Url::parse(&url) {
+        Ok(url) => url.to_string(),
+        _ => return HttpResponse::BadRequest().finish(),
+    };
+
     let uuid = Uuid::new_v4();
 
     event!(Level::INFO, %uuid, %url, "inserting a new urlet into the database");
