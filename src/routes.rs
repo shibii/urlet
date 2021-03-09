@@ -12,17 +12,11 @@ struct Urlet {
 }
 
 #[allow(clippy::async_yields_async)]
-#[instrument(skip(req, pool))]
+#[instrument(skip(pool))]
 #[get("/{id}")]
-async fn redirect(req: HttpRequest, pool: web::Data<PgPool>) -> impl Responder {
-    event!(Level::TRACE, "getting route parameter id");
-    let id = match req.match_info().get("id") {
-        Some(id) => id,
-        _ => return HttpResponse::BadRequest().finish(),
-    };
-
+async fn redirect(id: web::Path<String>, pool: web::Data<PgPool>) -> impl Responder {
     event!(Level::INFO, %id, "decoding id shorthand into uuid");
-    let uuid = match super::urlet::decode(id) {
+    let uuid = match super::urlet::decode(&id) {
         Ok(uuid) => uuid,
         _ => return HttpResponse::BadRequest().finish(),
     };
