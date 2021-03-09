@@ -13,9 +13,16 @@ struct Urlet {
 #[instrument(skip(req, pool))]
 #[get("/{id}")]
 pub async fn redirect(req: HttpRequest, pool: web::Data<PgPool>) -> impl Responder {
-    let id: &str = req.match_info().get("id").unwrap();
-    let uuid = super::urlet::decode(id).unwrap();
-    event!(Level::INFO, %id, "querying urlet from the database");
+    let id = match req.match_info().get("id") {
+        Some(id) => id,
+        _ => return HttpResponse::BadRequest().finish().await,
+    };
+
+    let uuid = match super::urlet::decode(id) {
+        Ok(uuid) => uuid,
+        _ => return HttpResponse::BadRequest().finish().await,
+    };
+
     let res = sqlx::query_as!(Urlet, r#"SELECT * FROM urlet WHERE id = $1"#, uuid)
         .fetch_one(pool.get_ref())
         .await;
@@ -27,7 +34,7 @@ pub async fn redirect(req: HttpRequest, pool: web::Data<PgPool>) -> impl Respond
                 .finish()
                 .await
         }
-        _ => HttpResponse::NotFound().finish().await,
+        _ => HttpResponse::BadRequest().finish().await,
     }
 }
 
