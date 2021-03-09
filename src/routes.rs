@@ -13,7 +13,7 @@ struct Urlet {
 #[allow(clippy::async_yields_async)]
 #[instrument(skip(req, pool))]
 #[get("/{id}")]
-pub async fn redirect(req: HttpRequest, pool: web::Data<PgPool>) -> impl Responder {
+async fn redirect(req: HttpRequest, pool: web::Data<PgPool>) -> impl Responder {
     let id = match req.match_info().get("id") {
         Some(id) => id,
         _ => return HttpResponse::BadRequest().finish(),
@@ -39,7 +39,7 @@ pub async fn redirect(req: HttpRequest, pool: web::Data<PgPool>) -> impl Respond
 #[allow(clippy::async_yields_async)]
 #[instrument(skip(pool))]
 #[post("/")]
-pub async fn generate_urlet(url: String, pool: web::Data<PgPool>) -> impl Responder {
+async fn generate_urlet(url: String, pool: web::Data<PgPool>) -> impl Responder {
     let uuid = Uuid::new_v4();
 
     event!(Level::INFO, %uuid, %url, "inserting a new urlet into the database");
