@@ -1,4 +1,5 @@
 <script>
+  import "./global.css";
   import { generate_urlet } from "./services/api";
 
   let url;
