@@ -1,5 +1,4 @@
 :root {
-  --theme0: lightblue;
   --text0: #222222;
 }
 
@@ -23,5 +22,6 @@ body {
   font-family: 'Noto Sans TC', sans-serif;
   color: var(--text0);
   height: 100%;
-  background-color: var(--theme0);
+  background: rgb(213,213,213);
+  background: linear-gradient(172deg, rgba(213,213,213,1) 0%, rgba(203,203,203,1) 50%, rgba(157,157,157,1) 100%);
 }
