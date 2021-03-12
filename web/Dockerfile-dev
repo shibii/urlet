@@ -1,0 +1,5 @@
+FROM node:alpine
+
+RUN addgroup --gid 1030 mountgroup \
+  && adduser --disabled-password mountuser \
+  && adduser mountuser mountgroup
