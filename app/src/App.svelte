@@ -2,8 +2,8 @@
   import "./global.css";
   import { generate_urlet } from "./services/api";
 
-  let url;
-  let valid;
+  let url = "";
+  let valid = false;
   let urlet;
   $: {
     try {
@@ -35,7 +35,7 @@
       <input
         id="url"
         class:valid
-        class:empty={url === ""}
+        class:empty={url == ""}
         type="text"
         bind:value={url}
         autocomplete="off"
