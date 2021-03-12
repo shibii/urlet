@@ -29,7 +29,7 @@
 <div class="content">
   {#if !urlet}
     <h1>urlet</h1>
-    <p>generate an alternative url that redirects to the same address</p>
+    <p>generate an alternative url that redirects to the given address</p>
     <form on:submit|preventDefault={generate}>
       <label for="url">URL:</label>
       <input
@@ -80,11 +80,14 @@
   h1 {
     font-size: 4rem;
     text-align: center;
+    text-shadow: white 1px 0 10px;
     margin: 0.5rem 0;
   }
   p {
-    font-size: 3rem;
+    font-size: 1.5rem;
     margin: 0.5rem 0;
+    color: grey;
+    text-shadow: white 1px 0 10px;
   }
   p.urlet {
     font-size: 1.5rem;
@@ -94,6 +97,7 @@
     display: block;
     margin-top: 1em;
     font-size: small;
+    color: grey;
   }
   input {
     display: block;
