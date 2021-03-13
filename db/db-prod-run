@@ -1,0 +1,10 @@
+#!/bin/sh
+docker run \
+    --name urlet-db \
+    --env-file .env-prod \
+    -v $PWD/database.sql:/docker-entrypoint-initdb.d/database.sql \
+    -v urlet-db-data:/var/lib/postgresql/data \
+    --network urlet-net \
+    --restart unless-stopped \
+    -d \
+    postgres:alpine
