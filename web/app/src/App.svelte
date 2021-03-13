@@ -16,7 +16,7 @@
 
   const generate = () => {
     generate_urlet(url)
-      .then((res) => (urlet = window.location.href + res))
+      .then((res) => (urlet = window.location.origin + "/" + res))
       .catch((err) => console.log(err));
   };
   const copy = () => {
@@ -45,9 +45,11 @@
   {:else}
     <p class="urlet">
       {urlet}
-      <button class="copy-button" on:click={copy}>
-        <img src="/copy.svg" class="copy" alt="copy" /></button
-      >
+      {#if navigator.clipboard}
+        <button class="copy-button" on:click={copy}>
+          <img src="/copy.svg" class="copy" alt="copy" /></button
+        >
+      {/if}
     </p>
   {/if}
 </div>
