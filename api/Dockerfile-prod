@@ -1,0 +1,29 @@
+
+FROM rust:slim as planner
+WORKDIR /usr/src/app
+RUN cargo install cargo-chef 
+COPY Cargo.* ./
+COPY src ./src
+RUN cargo chef prepare  --recipe-path recipe.json
+
+FROM rust:slim as cacher
+WORKDIR /usr/src/app
+RUN cargo install cargo-chef
+COPY --from=planner /usr/src/app/recipe.json recipe.json
+RUN cargo chef cook --release --recipe-path recipe.json
+
+FROM rust:slim as builder
+ENV PKG_CONFIG_ALLOW_CROSS=1
+#local scheme-only pg instance which is used to validate queries build time
+ENV DATABASE_URL=postgresql://postgres:postgr3s@localhost:5432/postgres
+
+WORKDIR /usr/src/app
+COPY Cargo.* ./
+COPY src ./src
+COPY --from=cacher /usr/src/app/target target
+COPY --from=cacher $CARGO_HOME $CARGO_HOME
+RUN cargo build --release --bin urlet-api
+
+FROM gcr.io/distroless/cc-debian10
+COPY --from=builder /usr/src/app/target/release/urlet-api /
+CMD ["./urlet-api"]

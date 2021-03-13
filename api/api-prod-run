@@ -1,0 +1,11 @@
+#!/bin/sh
+
+docker build -t urlet-api --network host -f Dockerfile-prod . 
+
+docker run \
+    --name urlet-api \
+    --env-file .env-prod \
+    --network urlet-net \
+    -d \
+    --restart unless-stopped \
+    urlet-api
