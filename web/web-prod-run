@@ -1,0 +1,9 @@
+#!/bin/sh
+docker build -t urlet-web -f Dockerfile-prod .
+docker run \
+    --name urlet-web \
+    --network urlet-net \
+    -p 80:80 \
+    -d \
+    --restart unless-stopped \
+    urlet-web
