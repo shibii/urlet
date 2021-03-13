@@ -1,4 +1,2 @@
-.vscode
-.snowpack
 build/
 node_modules/
