@@ -17,13 +17,20 @@ module.exports = {
     /* Example: Enable an SPA Fallback in development: */
     // {"match": "routes", "src": ".*", "dest": "/index.html"},
     {
-      match: "all",
-      src: '/api/.*',
+      match: "routes",
+      src: '^\/$',
       dest: (req, res) => {
-        req.url = req.url.replace(/^\/api/, '');
         proxy.web(req,res);
       }
-    }
+    },
+    {
+      match: "routes",
+      src: '^\/[a-zA-Z0-9-_]{22}$',
+      dest: (req, res) => {
+        console.log(res);
+        proxy.web(req,res);
+      }
+    },
   ],
   optimize: {
     /* Example: Bundle your final build: */
