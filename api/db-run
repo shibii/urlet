@@ -1,9 +1,0 @@
-#!/bin/sh
-docker run \
-    --name urlet-db \
-    --env-file .env \
-    -v $PWD/database.sql:/docker-entrypoint-initdb.d/database.sql \
-    -it \
-    --rm \
-    -p 5432:5432 \
-    postgres:alpine
